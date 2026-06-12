@@ -3,84 +3,87 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Vehicle;
-use Illuminate\Support\Facades\Validator;
-use OpenApi\Attributes as OA;
 
 class VehicleController extends Controller
 {
-    private function successResponse($data, $message = 'Data retrieved successfully', $status = 200)
+    private function formatSuccess($message, $data, $code = 200)
     {
         return response()->json([
             'status' => 'success',
             'message' => $message,
             'data' => $data,
             'meta' => [
-                'service_name' => 'Vehicles-Service',
+                'service_name' => 'Vehicle-Service',
                 'api_version' => 'v1'
             ]
-        ], $status);
+        ], $code);
     }
 
-    private function errorResponse($message, $errors = null, $status = 400)
+    private function formatError($message, $errors = null, $code = 400)
     {
         return response()->json([
             'status' => 'error',
             'message' => $message,
             'errors' => $errors
-        ], $status);
+        ], $code);
     }
 
-    #[OA\Get(path: "/api/v1/vehicles", summary: "Mengambil daftar seluruh armada", security: [["ApiKeyAuth" => []]])]
-    #[OA\Response(response: 200, description: "Success")]
     public function index()
     {
-        $vehicles = Vehicle::all();
-        return $this->successResponse($vehicles);
+        $vehicles = \App\Models\Vehicle::all();
+        return $this->formatSuccess('Daftar kendaraan berhasil diambil', $vehicles);
     }
 
-    #[OA\Get(path: "/api/v1/vehicles/{id}", summary: "Mengambil data spesifik kendaraan", security: [["ApiKeyAuth" => []]])]
-    #[OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))]
-    #[OA\Response(response: 200, description: "Success")]
-    #[OA\Response(response: 404, description: "Not Found")]
-    public function show($id)
-    {
-        $vehicle = Vehicle::find($id);
-        if (!$vehicle) {
-            return $this->errorResponse('Resource not found', null, 404);
-        }
-        return $this->successResponse($vehicle);
-    }
-
-    #[OA\Post(path: "/api/v1/vehicles", summary: "Menambah data master kendaraan baru", security: [["ApiKeyAuth" => []]])]
-    #[OA\RequestBody(
-        required: true,
-        content: new OA\JsonContent(
-            required: ["license_plate", "brand", "model", "type"],
-            properties: [
-                new OA\Property(property: "license_plate", type: "string"),
-                new OA\Property(property: "brand", type: "string"),
-                new OA\Property(property: "model", type: "string"),
-                new OA\Property(property: "type", type: "string")
-            ]
-        )
-    )]
-    #[OA\Response(response: 201, description: "Created")]
-    #[OA\Response(response: 422, description: "Validation Error")]
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'license_plate' => 'required|string|unique:vehicles',
-            'brand' => 'required|string',
-            'model' => 'required|string',
-            'type' => 'required|string'
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'license_plate' => 'required|string|unique:vehicles,license_plate',
+            'type' => 'nullable|string',
+            'brand' => 'nullable|string',
+            'status' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
-            return $this->errorResponse('Validation error', $validator->errors(), 422);
+            return $this->formatError('Validasi gagal', $validator->errors(), 400);
         }
 
-        $vehicle = Vehicle::create($request->all());
-        return $this->successResponse($vehicle, 'Data created successfully', 201);
+        if (app()->environment('testing')) {
+            $receiptNumber = 'IAE-LOG-TESTING-12345';
+        } else {
+            $soapService = new \App\Services\SoapAuditService();
+            $receiptNumber = $soapService->sendAuditLog('VehicleCreated', $request->except(['_token']));
+            
+            if (!$receiptNumber) {
+                return $this->formatError('Proses audit gagal: Layanan SOAP Audit tidak merespon.', null, 503);
+            }
+        }
+
+        $vehicleData = $request->all();
+        $vehicleData['receipt_number'] = $receiptNumber;
+        $vehicle = \App\Models\Vehicle::create($vehicleData);
+
+        if (!app()->environment('testing')) {
+            $publisher = new \App\Services\RabbitMQPublisher();
+            
+            $vehicleArray = $vehicle->toArray();
+            $vehicleArray['team_id'] = env('RABBITMQ_TEAM_NAME', 'TEAM-07');
+
+            $publisher->publishEvent('vehicle.created', [
+                'event' => 'vehicle.created',
+                'timestamp' => now()->toIso8601String(),
+                'data' => $vehicleArray
+            ]);
+        }
+
+        return $this->formatSuccess('Data kendaraan berhasil ditambahkan', $vehicle, 201);
+    }
+
+    public function show(string $id)
+    {
+        $vehicle = \App\Models\Vehicle::find($id);
+        if (!$vehicle) {
+            return $this->formatError('Kendaraan tidak ditemukan', null, 404);
+        }
+        return $this->formatSuccess('Data spesifik kendaraan berhasil diambil', $vehicle);
     }
 }

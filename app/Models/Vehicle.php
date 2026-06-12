@@ -8,9 +8,9 @@ class Vehicle extends Model
 {
     protected $fillable = [
         'license_plate',
-        'brand',
-        'model',
         'type',
+        'brand',
         'status',
+        'receipt_number',
     ];
 }

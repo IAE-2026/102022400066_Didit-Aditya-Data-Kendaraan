@@ -2,19 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use OpenApi\Annotations as OA;
-
 /**
  * @OA\Info(
- *     title="Service Data Kendaraan (Vehicles)",
- *     version="1.0.0",
- *     description="API documentation for Data Kendaraan"
+ *      version="1.0.0",
+ *      title="Didit Vehicle Service API",
+ *      description="L5 Swagger OpenApi description",
+ *      @OA\Contact(
+ *          email="didit@example.com"
+ *      )
  * )
+ *
+ * @OA\Server(
+ *      url=L5_SWAGGER_CONST_HOST,
+ *      description="Demo API Server"
+ * )
+ *
  * @OA\SecurityScheme(
- *     securityScheme="ApiKeyAuth",
- *     type="apiKey",
- *     in="header",
- *     name="X-IAE-KEY"
+ *      securityScheme="ApiKeyAuth",
+ *      type="apiKey",
+ *      in="header",
+ *      name="X-IAE-KEY",
+ *      description="Enter your NIM (e.g. 102022400066)"
  * )
  */
 abstract class Controller

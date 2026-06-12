@@ -1,0 +1,29 @@
+--- Kontrak Tugas 2 - PENCATATAN OPERASIONAL.docx ---
+PENCATATAN OPERASIONAL (PENGISIAN BBM)
+Fokus: Service Tikta, Didit, dan Hafizh
+Alur: 
+Di tengah jalan, driver isi bensin dan input nota. 
+Service Tikta nangkep data pengeluaran bensin ini. 
+Buat mastiin datanya valid, service Tikta nembak API ke Didit (buat validasi plat nomor mobil) dan ke Hafizh (buat validasi emang bener driver B yang lagi bawa mobilnya hari ini).
+Endpoint
+SERVICE TIKTA (MONITORING BBM) Resource Name: fuel-logs
+Collection: GET /api/v1/fuel-logs (Mengambil daftar data riwayat pengisian BBM). 
+Resource: GET /api/v1/fuel-logs/{id} (Mengambil data spesifik satu struk/nota pengisian BBM). 
+Action: POST /api/v1/fuel-logs (Menambah data baru saat driver input nota BBM). 
+SERVICE DIDIT (DATA KENDARAAN) Resource Name: vehicles
+Collection: GET /api/v1/vehicles (Mengambil daftar seluruh armada). 
+Resource: GET /api/v1/vehicles/{id} (Mengambil data spesifik kendaraan). 
+Action: POST /api/v1/vehicles (Menambah data master kendaraan baru).
+SERVICE HAFIZH (PENJADWALAN DRIVER) Resource Name: schedules
+Collection: GET /api/v1/schedules (Mengambil daftar seluruh jadwal operasional). 
+Resource: GET /api/v1/schedules/{id} (Mengambil data spesifik jadwal shift). 
+Action: POST /api/v1/schedules (Menambah data penugasan atau jadwal baru). 
+Awalnya frontend nembak Action POST /api/v1/fuel-logs ke service Tikta. Sebelum Tikta nge-save data bensin itu ke databasenya, backend Tikta wajib nembak Resource GET /api/v1/vehicles/{id} ke Didit buat mastiin mobilnya ada, dan nembak Resource GET /api/v1/schedules/{id} ke Hafizh buat mastiin drivernya beneran lagi dinas.
+Kalau respon dari Didit dan Hafizh itu Berhasil (Success - 2xx), baru deh service Tikta nerusin proses simpannya. Kalau salah satu gagal, service Tikta langsung nolak proses input bensinnya.
+
+
+--- Tugas 2 - Build Your Service.pdf ---
+Ekky Novriza Alam
+Tugas 2BBK2HAB3  - Integrasi Aplikasi Enterprise
+1
+Error: 'charmap' codec can't encode character '\ufb01' in position 129: character maps to <undefined>

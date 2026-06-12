@@ -1,0 +1,15 @@
+# Analisis Tugas 3 — Integrasi Service ke Cloud Pusat
+
+**Nama**: Didit Aditya  
+**NIM**: 102022400066  
+**Service**: Vehicle Service (Data Kendaraan)
+
+---
+
+Pada service kendaraan ini, transaksi yang paling kritis adalah proses penambahan data kendaraan baru lewat endpoint POST /api/v1/vehicles. Alasannya sederhana: operasi ini bukan sekadar menyimpan data ke database, tapi juga harus berkomunikasi dengan dua sistem eksternal sekaligus — yaitu SOAP Audit untuk mencatat log dan RabbitMQ untuk menyebarkan notifikasi ke service lain. Kalau salah satu dari rantai ini gagal di tahap awal (khususnya audit), maka data tidak boleh masuk ke database sama sekali. Jadi bisa dibilang ini adalah satu-satunya operasi di service ini yang benar-benar melibatkan banyak pihak dan punya risiko paling tinggi jika terjadi kesalahan.
+
+Alur kerjanya dimulai dari sisi keamanan. Setiap request yang masuk harus membawa token JWT yang didapat dari SSO dosen. Middleware VerifySsoJwt akan mengambil public key (JWKS) dari server SSO untuk memverifikasi keaslian token tersebut. Setelah token terbukti valid, middleware mengekstrak data user dari payload token, menyimpan atau memperbarui datanya di tabel users lokal, lalu mengecek role-nya. Hanya user dengan role admin, staf, atau warga yang boleh melakukan operasi tulis — selain itu langsung ditolak. Pendekatan ini dipilih supaya service tidak bergantung sepenuhnya pada format role dari SSO, melainkan punya kontrol sendiri lewat tabel roles di database lokal.
+
+Setelah lolos otorisasi, controller melakukan validasi input (plat nomor harus unik), lalu langkah berikutnya yang cukup penting: mengirim log audit ke sistem legacy dosen via SOAP XML sebelum data disimpan. Service SoapAuditService membungkus data kendaraan ke dalam format XML envelope, mengirimnya ke endpoint /soap/v1/audit, dan menunggu balasan berupa ReceiptNumber. Jika SOAP gagal, proses berhenti total dan client mendapat response 503. Baru setelah ReceiptNumber didapat, data kendaraan beserta nomor resinya disimpan ke database. Urutan ini sengaja dibuat begitu supaya tidak ada data yang "lolos" tanpa tercatat di sistem audit pusat.
+
+Langkah terakhir adalah menyebarkan event vehicle.created ke RabbitMQ lewat HTTP bridge, supaya service lain yang bergantung pada data armada bisa langsung tahu ada kendaraan baru. Bedanya dengan SOAP, kegagalan di tahap RabbitMQ tidak membatalkan transaksi — data sudah aman tersimpan, jadi notifikasi dianggap sebagai pelengkap yang bisa di-retry nanti. Secara keseluruhan, arsitektur ini memakai pola BCE (Boundary-Control-Entity) di mana route dan sistem eksternal berperan sebagai Boundary, middleware serta service class sebagai Control, dan model Eloquent (User, Role, Vehicle) sebagai Entity. Pemisahan ini membuat setiap komponen punya tanggung jawab yang jelas dan tidak saling mencampuri.
