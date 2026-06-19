@@ -28,7 +28,8 @@ class M2MAuthService
             
             try {
                 $response = Http::post($url, [
-                    'api_key' => $apiKey
+                    'api_key' => $apiKey,
+                    'nim'     => env('IAE_MHS_NIM', '102022400066')
                 ]);
 
                 if ($response->successful()) {
