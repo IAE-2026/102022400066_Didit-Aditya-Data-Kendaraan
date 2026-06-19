@@ -1,4 +1,5 @@
 # Prompt Engineering Log
+## Service: Data Kendaraan (Didit)
 
 ## Waktu Mulai: 08 Juni 2026
 - **11:47 WIB**: "Bantuin dong ngerjain Tugas 3 IAE. Disuruh gabungin service ke Cloud Pusat dosen nih. Ada 4 tugas: dokumen analisis, SSO pake JWT, nembak SOAP XML, sama ngirim antrian ke RabbitMQ. Enaknya mulai ngerjain dari mana ya?"

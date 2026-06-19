@@ -52,6 +52,7 @@ class VerifySsoJwt
                 });
 
                 $keys = JWK::parseKeySet($jwks);
+                JWT::$leeway = 60; // Allow 60 seconds clock skew
                 $decoded = JWT::decode($token, $keys);
                 
             } catch (\Exception $e) {
@@ -65,6 +66,7 @@ class VerifySsoJwt
                         return $response->json();
                     });
                     $keys = JWK::parseKeySet($jwks);
+                    JWT::$leeway = 60; // Allow 60 seconds clock skew
                     $decoded = JWT::decode($token, $keys);
                 } catch (\Exception $retryException) {
                     return response()->json([

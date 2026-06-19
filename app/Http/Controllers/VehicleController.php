@@ -86,4 +86,15 @@ class VehicleController extends Controller
         }
         return $this->formatSuccess('Data spesifik kendaraan berhasil diambil', $vehicle);
     }
+
+    public function destroy(string $id)
+    {
+        $vehicle = \App\Models\Vehicle::find($id);
+        if (!$vehicle) {
+            return $this->formatError('Kendaraan tidak ditemukan', null, 404);
+        }
+
+        $vehicle->delete();
+        return $this->formatSuccess('Data kendaraan berhasil dihapus', null);
+    }
 }

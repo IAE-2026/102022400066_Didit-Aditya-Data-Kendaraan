@@ -14,4 +14,5 @@ Route::middleware([VerifySsoJwt::class])->prefix('v1')->group(function () {
     Route::get('/vehicles', [VehicleController::class, 'index']);
     Route::get('/vehicles/{id}', [VehicleController::class, 'show']);
     Route::post('/vehicles', [VehicleController::class, 'store']);
+    Route::delete('/vehicles/{id}', [VehicleController::class, 'destroy']);
 });
