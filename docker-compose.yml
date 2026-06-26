@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: vehicles-service
+
     ports:
       - "8000:8000"
     environment:
@@ -19,7 +19,7 @@ services:
 
   didit-db:
     image: mysql:8.0
-    container_name: didit-db
+
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: secret
