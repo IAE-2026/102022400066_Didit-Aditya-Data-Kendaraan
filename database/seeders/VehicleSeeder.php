@@ -12,18 +12,14 @@ class VehicleSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\Vehicle::create([
-            'license_plate' => 'B 1234 ABC',
-            'type' => 'Car',
-            'brand' => 'Toyota',
-            'status' => 'active',
-        ]);
+        \App\Models\Vehicle::firstOrCreate(
+            ['license_plate' => 'B 1234 ABC'],
+            ['type' => 'Car', 'brand' => 'Toyota', 'status' => 'active']
+        );
         
-        \App\Models\Vehicle::create([
-            'license_plate' => 'D 5678 DEF',
-            'type' => 'Truck',
-            'brand' => 'Hino',
-            'status' => 'active',
-        ]);
+        \App\Models\Vehicle::firstOrCreate(
+            ['license_plate' => 'D 5678 DEF'],
+            ['type' => 'Truck', 'brand' => 'Hino', 'status' => 'active']
+        );
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class VehicleController extends Controller
 {
@@ -28,12 +29,45 @@ class VehicleController extends Controller
         ], $code);
     }
 
+    #[OA\Get(
+        path: '/api/v1/vehicles',
+        summary: 'Get list of vehicles',
+        tags: ['Vehicles'],
+        security: [['ApiKeyAuth' => []]],
+        responses: [
+            new OA\Response(response: 200, description: 'Successful operation'),
+            new OA\Response(response: 401, description: 'Unauthorized')
+        ]
+    )]
     public function index()
     {
         $vehicles = \App\Models\Vehicle::all();
         return $this->formatSuccess('Daftar kendaraan berhasil diambil', $vehicles);
     }
 
+    #[OA\Post(
+        path: '/api/v1/vehicles',
+        summary: 'Create a new vehicle',
+        tags: ['Vehicles'],
+        security: [['ApiKeyAuth' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['license_plate'],
+                properties: [
+                    new OA\Property(property: 'license_plate', type: 'string', example: 'D 1234 ABC'),
+                    new OA\Property(property: 'brand', type: 'string', example: 'Toyota'),
+                    new OA\Property(property: 'type', type: 'string', example: 'SUV'),
+                    new OA\Property(property: 'status', type: 'string', example: 'Tersedia'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Successful operation'),
+            new OA\Response(response: 422, description: 'Validation failed'),
+            new OA\Response(response: 401, description: 'Unauthorized')
+        ]
+    )]
     public function store(Request $request)
     {
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
@@ -44,7 +78,7 @@ class VehicleController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->formatError('Validasi gagal', $validator->errors(), 400);
+            return $this->formatError('Validasi gagal', $validator->errors(), 422);
         }
 
         if (app()->environment('testing')) {
@@ -78,6 +112,20 @@ class VehicleController extends Controller
         return $this->formatSuccess('Data kendaraan berhasil ditambahkan', $vehicle, 201);
     }
 
+    #[OA\Get(
+        path: '/api/v1/vehicles/{id}',
+        summary: 'Get specific vehicle',
+        tags: ['Vehicles'],
+        security: [['ApiKeyAuth' => []]],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Successful operation'),
+            new OA\Response(response: 404, description: 'Not found'),
+            new OA\Response(response: 401, description: 'Unauthorized')
+        ]
+    )]
     public function show(string $id)
     {
         $vehicle = \App\Models\Vehicle::find($id);
@@ -85,16 +133,5 @@ class VehicleController extends Controller
             return $this->formatError('Kendaraan tidak ditemukan', null, 404);
         }
         return $this->formatSuccess('Data spesifik kendaraan berhasil diambil', $vehicle);
-    }
-
-    public function destroy(string $id)
-    {
-        $vehicle = \App\Models\Vehicle::find($id);
-        if (!$vehicle) {
-            return $this->formatError('Kendaraan tidak ditemukan', null, 404);
-        }
-
-        $vehicle->delete();
-        return $this->formatSuccess('Data kendaraan berhasil dihapus', null);
     }
 }

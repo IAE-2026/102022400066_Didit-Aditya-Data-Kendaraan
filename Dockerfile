@@ -12,7 +12,7 @@ COPY . .
 
 RUN composer install --no-interaction --optimize-autoloader
 
-# Run Laravel artisan serve
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Run Laravel artisan migrate, generate swagger docs, and then serve
+CMD php artisan migrate --seed --force && php artisan l5-swagger:generate && php artisan serve --host=0.0.0.0 --port=8000
 
 EXPOSE 8000

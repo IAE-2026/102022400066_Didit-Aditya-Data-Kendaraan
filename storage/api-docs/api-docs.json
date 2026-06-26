@@ -8,11 +8,17 @@
     "paths": {
         "/api/v1/vehicles": {
             "get": {
-                "summary": "Mengambil daftar seluruh armada",
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "Get list of vehicles",
                 "operationId": "ec407c20094a18b143c36165ac4faf7d",
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "Successful operation"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     }
                 },
                 "security": [
@@ -22,7 +28,10 @@
                 ]
             },
             "post": {
-                "summary": "Menambah data master kendaraan baru",
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "Create a new vehicle",
                 "operationId": "30aac71ccd53f75477209f9b585f03a5",
                 "requestBody": {
                     "required": true,
@@ -30,23 +39,24 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "license_plate",
-                                    "brand",
-                                    "model",
-                                    "type"
+                                    "license_plate"
                                 ],
                                 "properties": {
                                     "license_plate": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "D 1234 ABC"
                                     },
                                     "brand": {
-                                        "type": "string"
-                                    },
-                                    "model": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "Toyota"
                                     },
                                     "type": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "SUV"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "Tersedia"
                                     }
                                 },
                                 "type": "object"
@@ -56,10 +66,13 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Successful operation"
                     },
-                    "422": {
-                        "description": "Validation Error"
+                    "400": {
+                        "description": "Validation failed"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     }
                 },
                 "security": [
@@ -71,7 +84,10 @@
         },
         "/api/v1/vehicles/{id}": {
             "get": {
-                "summary": "Mengambil data spesifik kendaraan",
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "Get specific vehicle",
                 "operationId": "59a5fab57558be22007c4dfd5e7614bd",
                 "parameters": [
                     {
@@ -79,16 +95,19 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "Successful operation"
                     },
                     "404": {
-                        "description": "Not Found"
+                        "description": "Not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     }
                 },
                 "security": [
@@ -107,5 +126,11 @@
                 "in": "header"
             }
         }
-    }
+    },
+    "tags": [
+        {
+            "name": "Vehicles",
+            "description": "Vehicles"
+        }
+    ]
 }

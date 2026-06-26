@@ -25,10 +25,10 @@ type User {
 type Vehicle {
     id: ID!
     license_plate: String!
-    brand: String!
-    model: String!
-    type: String!
-    status: String!
+    brand: String
+    type: String
+    status: String
+    receipt_number: String
     created_at: DateTime!
     updated_at: DateTime!
 }

@@ -20,6 +20,12 @@ class VerifySsoJwt
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Bypass for Tugas 2 testing (API Key)
+        $apiKey = $request->header('X-IAE-KEY');
+        if ($apiKey === '102022400066') {
+            return $next($request);
+        }
+
         $authHeader = $request->header('Authorization');
         if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
             return response()->json([
